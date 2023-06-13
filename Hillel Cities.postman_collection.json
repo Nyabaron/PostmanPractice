@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "083f1d22-dc42-45b9-b515-41ac4d2b91c1",
+		"name": "Hillel Cities",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27410547"
+	},
+	"item": [
+		{
+			"name": "Get all cities",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"FirstElemID check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.getAllCities[0].id).to.eql('23');\r",
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"FirstCity\", jsonData.data.getAllCities[0].id);\r",
+							"pm.collectionVariables.set(\"Kyiv\", jsonData.data.getAllCities[10].id);\r",
+							"pm.collectionVariables.set(\"Lviv\", jsonData.data.getAllCities[13].id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query{\r\n  getAllCities{\r\n    id \r\n    name \r\n    square \r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get city by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Kyiv Id check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.getCityById.id).to.eql(pm.collectionVariables.get(\"Kyiv\"));\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query($kyivCity: ID!){\r\n  getCityById(id: $kyivCity){\r\n    id \r\n    name \r\n    square \r\n  }\r\n}",
+						"variables": "{\r\n    \"kyivCity\" : {{Kyiv}}\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get cities by range id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"FirstElemID check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.getCityByRangeId[0].id).to.eql('8');\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query($minId: Int!, $maxId: Int!){\r\n  getCityByRangeId(filter: {minId:$minId, maxId:$maxId}) \r\n  {\r\n    id\r\n    name\r\n    square\r\n  }\r\n}\r\n",
+						"variables": "{\r\n    \"minId\":{{Kyiv}},\r\n    \"maxId\":{{Lviv}}\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Kyiv, Lviv Description",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Kyiv description check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.Kyiv.description).to.contain(\"В Києві\");\r",
+							"});\r",
+							"pm.test(\"Lviv description check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.Lviv.description).to.contain(\"Львів\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query($Kyiv: ID!, $Lviv: ID!){\r\n  Kyiv:getCityById(id: $Kyiv) \r\n  {\r\n      ...CityDescription\r\n  }\r\n  Lviv:getCityById(id: $Lviv)\r\n  {\r\n      ...CityDescription\r\n  }\r\n}\r\n\r\nfragment CityDescription on City{\r\n    description\r\n}",
+						"variables": "{\r\n    \"Kyiv\":{{Kyiv}},\r\n    \"Lviv\":{{Lviv}}\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add random city",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"CityName\", \"{{$randomCity}}\");\r",
+							"pm.collectionVariables.set(\"CitySquare\", \"{{$randomInt}}\");\r",
+							"pm.collectionVariables.set(\"CityDescr\", \"{{$randomCatchPhrase}}\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation($CityName: String!,$CitySquare: Float!,$CityDescr: String!){\r\n  addCity(name:$CityName, square:$CitySquare, description:$CityDescr){\r\n    id\r\n    name\r\n    square\r\n    ...on City{\r\n      description\r\n    }\r\n  }\r\n}",
+						"variables": "{\r\n    \"CityName\":\"{{CityName}}\",\r\n    \"CitySquare\":\"{{CitySquare}}\",\r\n    \"CityDescr\":\"{{CityDescr}}\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update city",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Name check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.updateCity.name).to.eql(\"New Name\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation($newID: ID!){\r\n  updateCity(id:$newID, name:\"New Name\", square:2, description:\"New Descr\"){\r\n    id\r\n    name\r\n    square\r\n    ...on City{\r\n      description\r\n    }\r\n  }\r\n}",
+						"variables": "{\r\n    \"newID\":{{FirstCity}}\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete city",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Delete check\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data.deleteCity).to.eql(true);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation($newID: ID!){\r\n  deleteCity(id:$newID)\r\n}",
+						"variables": "{\r\n    \"newID\":{{FirstCity}}\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{mainUrl}}",
+					"host": [
+						"{{mainUrl}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Kyiv",
+			"value": ""
+		},
+		{
+			"key": "Lviv",
+			"value": ""
+		},
+		{
+			"key": "CityName",
+			"value": ""
+		},
+		{
+			"key": "CitySquare",
+			"value": ""
+		},
+		{
+			"key": "CityDescr",
+			"value": ""
+		},
+		{
+			"key": "FirstCity",
+			"value": ""
+		},
+		{
+			"key": "mainUrl",
+			"value": "https://graphql-ukrainian-cities.hillel.it/graphql",
+			"type": "string"
+		}
+	]
+}
